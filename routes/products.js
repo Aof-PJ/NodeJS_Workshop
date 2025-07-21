@@ -20,7 +20,9 @@ router.get('/:id?', async function(req, res, next) {
                 let data = {
                     productName: searchedData.productName,
                     remaining: searchedData.remaining,
-                    price: searchedData.price 
+                    price: searchedData.price,
+                    description : searchedData.description,
+                    imageUrl : searchedData.imageUrl,
                 };
                 response_form(res, 200, "Request successfully", data);
             }
@@ -34,7 +36,7 @@ router.get('/:id?', async function(req, res, next) {
 
 // add product
 router.post('/', async function(req, res, next) {
-    let { productName, remaining, price } = req.body;
+    let { productName, remaining, price, description, imageUrl } = req.body;
 
     // check product's name
     let searchedData = await productSchema.find({ productName });
@@ -43,11 +45,13 @@ router.post('/', async function(req, res, next) {
     try {
         if(isDup) {
             response_form(res, 400, "This product's name has been taken.", null);
-        } else if (productName && remaining && price) { 
+        } else if (productName && remaining>=0 && price>=0 && description && imageUrl) { 
             let product = new productSchema({
                 productName: productName,
                 remaining: remaining,
                 price: price,
+                description: description,
+                imageUrl: imageUrl,
             })
             await product.save();
 
@@ -63,7 +67,7 @@ router.post('/', async function(req, res, next) {
 
 // edited product data
 router.put('/:id', async function(req, res, next) {
-    let { productName, remaining, price } = req.body;
+    let { productName, remaining, price, description, imageUrl } = req.body;
     let { id } = req.params;
 
     if(!id) {
@@ -76,6 +80,8 @@ router.put('/:id', async function(req, res, next) {
             productData.productName = (productName?productName:productData.productName);
             productData.remaining = (remaining?remaining:productData.remaining);
             productData.price = (price?price:productData.price);
+            productData.description = (description?description:productData.description);
+            productData.imageUrl = (imageUrl?imageUrl:productData.imageUrl);
 
             productData.save();
             
@@ -134,7 +140,7 @@ router.post('/:id/orders', async function(req, res, next) {
         product_id = id;
         let productData = await productSchema.findById(id);
         if(productData){
-            if(productData.remaining > quantities) { // quantities check
+            if(productData.remaining >= quantities) { // quantities check
                 // create order
                 let new_order = new orderSchema({
                     customer_name : user_data.username,

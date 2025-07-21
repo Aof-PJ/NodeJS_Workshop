@@ -19,4 +19,11 @@ router.put('/:id/approve', async function(req, res, next) {
   response_form(res, 200, "Approved", data);
 });
 
+// get users data
+router.get('/', async function(req, res, next) {
+  let user = await userSchema.find({});
+
+  response_form(res, 200, "get data complete", user);
+});
+
 module.exports = router;
